@@ -1,0 +1,246 @@
+<?php include_once('../include/conn.php'); 
+include_once('../function/common_function.php'); 
+include_once('../include/main_header.php');
+@session_start();
+?>
+
+<body style="background-color: rgba(225, 255, 226, 0.936);">
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+      <div class="spinner-grow text-primary" role="status"></div>
+    </div>
+    <!-- Spinner End -->
+
+    <!-- Navbar Start -->
+      <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+          <a class="navbar-brand fw-bold text-dark mt-3" href="#"><img src="../assets/img/icon/favicon.png" style="max-height: 40px; margin-bottom: 12px;" class="mx-2" alt=""> E d u F l o w</a>
+          
+          <form class="d-flex mt-2" action="search_classes.php" method="get">
+
+            <div class="searchBtn">
+              <button type="button" class="btn btn-light mx-2" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-lg-end">
+                  <div class="d-flex searchIn">
+                    <input class="form-control me-2 text-dark" name="search_data" type="search" placeholder="Search..." aria-label="Search">
+                    <button class="btn btn-light" name="search_data_class" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                  </div>
+              </ul>
+            </div>
+
+          </form>
+
+          <button class="navbar-toggler mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav m-auto my-2 mb-lg-0 p-1">
+              <li class="nav-item mx-2">
+                <a class="nav-link active" aria-current="page" href="index.php"><img src="../assets/img/icon/home.png" class="mx-1 mb-1" alt="">Home</a>
+              </li>
+              <li class="nav-item mx-2">
+                <a class="nav-link" href="contactUs.php"><img src="../assets/img/icon/about.png" class="mx-1 mb-1" alt="">About Us</a>
+              </li>
+              <li class="nav-item mx-2">
+                <a class="nav-link" href="all_classes.php"><img src="../assets/img/icon/classes.png" class="mx-1 mb-1" alt="">Classes</a>
+              </li>
+              <li class="nav-item mx-2">
+                <a class="nav-link" href="institute.php"><img src="../assets/img/icon/institute.png" class="mx-1 mb-1" alt="">Institute</a>
+              </li>
+              <li class="nav-item mx-2 dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="../assets/img/icon/category.png" class="mx-1 mb-1" alt="">Categories
+                </a>
+                <ul class="dropdown-menu" style="background: #4ced61;" aria-labelledby="navbarDropdown">
+                  <li><?php getcategories(); ?></li>
+                </ul>
+              </li>
+              <?php
+
+              if(!isset($_SESSION['teacherLog'])){
+                echo "<li class='nav-item mx-2'>
+                        <a class='nav-link' href='./teacher_login.php'><img src='../assets/img/icon/login.png' class='mx-1 mb-1' alt=''>Signin</a>
+                      </li>";
+              }else{
+
+                $teach_email = $_SESSION['teacherLog'];
+                $teach_img = "SELECT * FROM teacher_table WHERE teach_email='$teach_email'";
+                $result_image = mysqli_query($conn,$teach_img);
+                $row_image = mysqli_fetch_array($result_image);
+                $teach_id = $row_image['teach_id'];
+
+                echo "<li class='nav-item mx-2'>
+                        <a class='nav-link' href='./profile_info.php?teach_id=$teach_id'><img src='../assets/img/icon/profile-user.png' class='mx-1 mb-1' alt=''>Profile</a>
+                      </li>
+                      
+                      <li class='nav-item mx-2'>
+                        <a class='nav-link' href='logout.php'><img src='../assets/img/icon/exit.png' class='mx-1 mb-1' alt=''>Logout</a>
+                      </li>";
+              }
+          
+            ?>
+              
+            </ul>
+
+            <ul class="navbar-nav me-auto my-2 mb-lg-0 p-1" style="border-radius: 12px; background: rgba(900, 955, 85, 0.800);">
+              <?php
+
+              if(!isset($_SESSION['teacherLog'])){
+                echo "<li class='nav-item mx-2'>
+                        <a class='nav-link' href='./teacher_login.php'><img src='../assets/img/icon/add.png' class='mx-1' alt=''> Add a Class</a>
+                      </li>";
+              }else{
+                echo "<li class='nav-item mx-2'>
+                        <a class='nav-link' href='addClass.php'><img src='../assets/img/icon/add.png' class='mx-1' alt=''> Add a Class</a>
+                      </li>";
+              }
+          
+            ?>
+              
+            </ul>
+            
+          </div>
+        </div>
+      </nav>
+    <!-- Navbar End -->
+
+
+  <style>
+    .about-avatar img{
+      border: 2px solid rgba(100, 255, 105, 0.792);
+      width:200px; 
+      height:200px; 
+      border-radius:6%; 
+      object-fit: cover;
+    }
+    @media (max-width: 768px) {
+      .about-avatar img{
+        width:140px; 
+        height:140px;
+      }
+    }
+  </style>  
+  
+    <!-- Profile Info -->
+          <section class="section about-section gray-bg" id="about">
+            <div class="container">
+                <div class="row mt-5">
+                    <div class="col-md-6 col-12">
+                      <div class='d-flex mt-2'>
+                          <?php
+          
+                          $teach_email = $_SESSION['teacherLog'];
+                          $teach_img = "SELECT * FROM teacher_table WHERE teach_email='$teach_email'";
+                          $result_image = mysqli_query($conn,$teach_img);
+                          $row_image = mysqli_fetch_array($result_image);
+                          $teach_img = $row_image['teach_img'];
+                          echo "<div class='about-avatar mb-3'>
+                                  <img src='./teach_images/$teach_img' title='' alt=''>
+                                </div>";
+                          
+                          ?>
+                          <div class="mx-3">
+  
+                            <?php
+                          
+                            $teach_email = $_SESSION['teacherLog'];
+                            $teach_img = "SELECT * FROM teacher_table WHERE teach_email='$teach_email'";
+                            $result_image = mysqli_query($conn,$teach_img);
+                            $row_image = mysqli_fetch_array($result_image);
+                            $teach_name = $row_image['teach_name'];
+                            $teach_email = $row_image['teach_email'];
+                            
+                            ?>
+                          <h3 class="text-dark d-flex"><?php echo $teach_name ?> <img class="mx-1" style="height:18px; width:18px;" src="../assets/img/icon/check.png" alt=""></h3>
+                          <h5 class="text-dark mb-4" style="font-size: 14px;"><?php echo $teach_email ?></h5>  
+
+                            <a class="text-decoration-none text-danger" href="delete_account.php?delete_account"><small>Delete Account <i class="fa-solid fa-trash mx-1 text-danger"></i></small></a>
+                          </div>
+                      </div>
+                      <div class="">
+                          <div class="about-text go-to mx-2">
+                              <div class="row about-list mt-3 mb-4">
+                                <h6 class="text-dark mb-1">Message Details</h6>
+                                  <div class="col-md-4 col-6">
+                                      <div class="media">
+                                          <label class="text-primary">All</label>
+                                          <?php count_all_teachMsg(); ?>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-4 col-6">
+                                      <div class="media">
+                                          <label class="text-primary">Unseen</label>
+                                          <?php count_unseen_teachMsg(); ?>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                    </div>
+
+                  <!-- Message Details Start -->
+
+                    <div class="col-md-6 col-12">
+                      <h3 class="text-dark mb-3 wow fadeInUp" data-wow-delay="0.1s">Messages <small><i class="fa-solid fa-message mx-1 text-info"></i></small></h3>
+
+                      <?php get_teach_messages(); ?>
+                      
+                    </div>
+                   
+                  <!-- Message Details End -->
+
+                </div>
+
+            </div>
+          </section>
+    <!-- Profile Info End -->  
+
+    <!-- Getting Posted Ads -->
+    
+        <div class="wow fadeInUp mx-3 mt-5 mb-5" data-wow-delay="0.1s">
+          
+          <h3 class="text-dark mb-2 text-center wow fadeInUp" data-wow-delay="0.1s">Posted classes <i class="fa-solid fa-book-open mx-1 text-danger"></i></h3> 
+          
+            <style>
+                .classes .card:hover{
+                  filter: brightness(70%);
+                  transform: scale(1.02);
+                  transition: 1s;
+                }
+                .classes .card img{
+                  height: 220px;
+                }
+            </style>
+            
+                <div class="container mt-5">
+                  <div class="row row-cols-1 row-cols-md-4 g-2">
+                    
+                    <?php
+                      get_teachPost();
+                    ?>
+              
+                  </div>
+                </div>
+              </div>
+          
+          </div>
+          </div>
+          
+    <!-- Getting Posted Ads End -->
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/lib/wow/wow.min.js"></script>
+    <script src="../assets/lib/easing/easing.min.js"></script>
+    <script src="../assets/lib/waypoints/waypoints.min.js"></script>
+    <script src="../assets/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="../assets/lib/counterup/counterup.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="../assets/js/main.js"></script>
+  </body>
+</html>
